@@ -1,0 +1,1 @@
+pyinstaller -D -y --add-data "run.ini;." --add-data "reg.bat;." --add-data "unreg.bat;." main.py

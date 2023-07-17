@@ -1,0 +1,17 @@
+.DS_Store
+node_modules
+
+build
+dist
+
+*.spec
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+__pycache__
