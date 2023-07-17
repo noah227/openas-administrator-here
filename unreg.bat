@@ -1,1 +1,1 @@
-main -a reg -rt unreg
+oaah -a reg -rt unreg

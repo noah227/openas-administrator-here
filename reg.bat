@@ -1,1 +1,1 @@
-main -a reg -rt reg
+oaah -a reg -rt reg

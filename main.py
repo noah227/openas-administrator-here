@@ -75,7 +75,7 @@ def __start(args):
         from utils import RegUtils
         rt = args.get("regType")
         if rt == "reg":
-            executable = os.path.join(os.path.dirname(__file__), "main.exe")
+            executable = os.path.join(os.path.dirname(__file__), "oaah.exe")
             RegUtils().reg(executable)
         elif rt == "unreg":
             RegUtils().unReg()
