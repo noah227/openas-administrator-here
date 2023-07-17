@@ -20,6 +20,9 @@ def ensureAdmin():
 class RegUtils:
     def __init__(self):
         self.config = self.loadConfig()
+        self.keyBase = "oaah"
+        self.shellBase = "Directory\\Background\\shell"
+        self.supportedExecutableList = ["cmd", "wt"]
         pass
 
     @staticmethod
@@ -46,21 +49,23 @@ class RegUtils:
         print("开始注册")
         os.system("pause")
         config = self.config
-        keyBase = "openas-administrator-here"
+
         for k, v in config.items():
+            if k not in self.supportedExecutableList:
+                continue
             if exe := v.get("executable"):
-                key = f"{keyBase}--{k}"
+                key = f"{self.keyBase}.{k}"
                 self.regKey(
-                    (winreg.HKEY_CLASSES_ROOT, f"directory\\background\\shell\\{key}"),
+                    (winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}"),
                     v.get("name"), valueExList=[
                         ["Icon", v.get("icon") or executable or exe]
                     ]
                 )
                 self.regKey(
-                    (winreg.HKEY_CLASSES_ROOT, f"directory\\background\\shell\\{key}\\command"),
+                    (winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}\\command"),
                     f"{executable} -a run -p %V -e {k}",
                 )
-        print(f"已完成右键注册！注册路径为：{keyBase}--*")
+        print(f"已完成右键注册！注册路径为：{self.keyBase}.*")
         print("执行main unreg可取消注册")
         os.system("pause")
         pass
@@ -69,14 +74,20 @@ class RegUtils:
     def unReg(self):
         config = self.config
         for k, v in config.items():
-            try:
-                key = f"openas-administrator-here--{k}"
-                self.unRegKey((
-                    winreg.HKEY_CLASSES_ROOT, f"directory\\background\\shell\\{key}"
-                ), keyExList=["Icon"])
-            except Exception as e:
-                print(e)
-                pass
+            if k in self.supportedExecutableList:
+                try:
+                    key = f"{self.keyBase}.{k}"
+                    # 要先移除subKeys才能移除父级key
+                    self.unRegKey((winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}\\command"))
+                    self.unRegKey((winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}"))
+
+                except Exception as e:
+                    print(f"解除注册时失败，解除项为：HKEY_CLASSES_ROOT\\{self.shellBase}\\{self.keyBase}.{k}")
+                    print("删除失败的原因为：", e)
+                    print("如有需要，请检查后手动进行删除")
+                    pass
+        print("已解除注册！")
+        os.system("pause")
         pass
 
     @staticmethod
@@ -90,13 +101,8 @@ class RegUtils:
         pass
 
     @staticmethod
-    def unRegKey(key, keyExList=None):
-        key = winreg.CreateKey(*key)
-        winreg.DeleteKey(key, "")
-        # for k in keyExList:
-        #     winreg.DeleteKeyEx(k)
-        print("已解除注册！")
-        os.system("pause")
+    def unRegKey(key):
+        winreg.DeleteKey(*key)
         pass
 
 
