@@ -71,7 +71,9 @@ class RegUtils:
         for k, v in config.items():
             try:
                 key = f"openas-administrator-here--{k}"
-                self.unRegKey(key, keyExList=["Icon"])
+                self.unRegKey((
+                    winreg.HKEY_CLASSES_ROOT, f"directory\\background\\shell\\{key}"
+                ), keyExList=["Icon"])
             except Exception as e:
                 print(e)
                 pass
@@ -89,9 +91,10 @@ class RegUtils:
 
     @staticmethod
     def unRegKey(key, keyExList=None):
-        winreg.DeleteKey(key)
-        for k in keyExList:
-            winreg.DeleteKeyEx(k)
+        key = winreg.CreateKey(*key)
+        winreg.DeleteKey(key, "")
+        # for k in keyExList:
+        #     winreg.DeleteKeyEx(k)
         print("已解除注册！")
         os.system("pause")
         pass
