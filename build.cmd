@@ -1,1 +1,1 @@
-pyinstaller -D -y -i icon.png -n oaah --add-data "run.ini;." --add-data "reg.bat;." --add-data "unreg.bat;." main.py
+pyinstaller -D -y -i icon.ico -n oaah --add-data "run.ini;." --add-data "reg.bat;." --add-data "unreg.bat;." main.py
