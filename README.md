@@ -6,7 +6,7 @@
 
 1. 从 [release](https://github.com/noah227/openas-administrator-here/releases) 下载最新版本，解压到文件夹
 2. 双击`reg.bat`，添加注册表右键菜单配置
-3. 文件夹空白处右击即可开始愉快地使用了~
+3. `Shift+文件夹空白处右击`即可开始愉快地使用了~
 
 ## 卸载
 
