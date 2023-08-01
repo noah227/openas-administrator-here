@@ -35,6 +35,7 @@ class RegUtils:
         }
         for item in self.supportedExecutableList:
             config[item] = RegUtils.getItemConfig(cp, item)
+
         print(config)
         return config
 
@@ -43,17 +44,23 @@ class RegUtils:
         """
         获取单个配置项的配置数据
         """
-        return {
-            "name": cp[key]["name"],
-            "executable": cp[key]["executable"],
-            "extended": RegUtils.getIfExtended(cp[key]["extended"])
-        }
+        # ["attrName", "getBoolValue"]
+        items = [
+            ["enabled", True],
+            ["name", False],
+            ["executable", False],
+            ["extended", True]
+        ]
+        config = {}
+        for attrName, getBooleanValue in items:
+            v = cp[key][attrName]
+            config[attrName] = RegUtils.getBooleanValue(v) if getBooleanValue else v
+        return config
 
     @staticmethod
-    def getIfExtended(extended: str):
+    def getBooleanValue(v: str):
         try:
-            extended = int(extended)
-            return extended > 0
+            return int(v) > 0
         except ValueError as e:
             print(e)
             return False
@@ -66,48 +73,74 @@ class RegUtils:
         config = self.config
 
         for k, v in config.items():
+            # 禁用项需要检查清除无用的注册项
+            if not v.get("enabled"):
+                error = self.__unReg(k, showError=False)
+                if not error:
+                    print(f"已解除未启用的注册项：{k}")
+                continue
+            # 跳过不支持的配置
             if k not in self.supportedExecutableList:
                 continue
+            # 注册配置
             if exe := v.get("executable"):
-                key = f"{self.keyBase}.{k}"
-                valueExList = [
-                    ["Icon", v.get("icon") or executable or exe]
-                ]
-                # Extended Verbs标记
-                if v.get("extended"):
-                    valueExList.append(["extended", ""])
-
-                self.regKey(
-                    (winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}"),
-                    v.get("name"), valueExList=valueExList
-                )
-                self.regKey(
-                    (winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}\\command"),
-                    f"{executable} -a run -p %V -e {k}",
-                )
+                self.__reg(k, v, exe, executable)
         print(f"已完成右键注册！注册路径为：{self.keyBase}.*")
-        print("执行main unreg可取消注册")
+        print("双击unreg.bat可取消注册")
         os.system("pause")
+        pass
+
+    def __reg(self, k, v, exe, executable):
+        key = f"{self.keyBase}.{k}"
+        valueExList = [
+            ["Icon", v.get("icon") or executable or exe]
+        ]
+        # Extended Verbs标记
+        if v.get("extended"):
+            valueExList.append(["extended", ""])
+
+        self.regKey(
+            (winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}"),
+            v.get("name"), valueExList=valueExList
+        )
+        self.regKey(
+            (winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}\\command"),
+            f"{executable} -a run -p %V -e {k}",
+        )
         pass
 
     # 反注册
     def unReg(self):
         config = self.config
+        unRegAllPassed = True
         for k, v in config.items():
             if k in self.supportedExecutableList:
-                try:
-                    key = f"{self.keyBase}.{k}"
-                    # 要先移除subKeys才能移除父级key
-                    self.unRegKey((winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}\\command"))
-                    self.unRegKey((winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}"))
-
-                except Exception as e:
-                    print(f"解除注册时失败，解除项为：HKEY_CLASSES_ROOT\\{self.shellBase}\\{self.keyBase}.{k}")
-                    print("删除失败的原因为：", e)
-                    print("如有需要，请检查后手动进行删除")
-                    pass
-        print("已解除注册！")
+                error = self.__unReg(k)
+                if error and unRegAllPassed:
+                    unRegAllPassed = False
+        print("已解除注册！" if unRegAllPassed else "解除过程中出现了错误！")
         os.system("pause")
+        pass
+
+    def __unReg(self, k, showError=True):
+        """
+        解除单个注册表配置项
+        :return: 是否出现了错误
+        """
+        try:
+            key = f"{self.keyBase}.{k}"
+            # 要先移除subKeys才能移除父级key
+            self.unRegKey((winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}\\command"))
+            self.unRegKey((winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}"))
+            return False
+
+        except Exception as e:
+            if showError:
+                print(f"解除注册时失败，解除项为：HKEY_CLASSES_ROOT\\{self.shellBase}\\{self.keyBase}.{k}")
+                print("删除失败的原因为：", e)
+                print("如有需要，请检查后手动进行删除")
+            return True
+            pass
         pass
 
     @staticmethod

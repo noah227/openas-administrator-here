@@ -7,6 +7,7 @@
 1. 从 [release](https://github.com/noah227/openas-administrator-here/releases) 下载最新版本，解压到文件夹
 2. 双击`reg.bat`，添加注册表右键菜单配置
 3. `Shift+文件夹空白处右击`即可开始愉快地使用了~
+4. 配置(`run.ini`)变更后只需要重新双击`reg.bat`就可以刷新注册表配置了
 
 ## 卸载
 
