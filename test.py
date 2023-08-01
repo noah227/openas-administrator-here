@@ -4,6 +4,19 @@
 # EMAIL  : noah227@foxmail.com
 
 import argparse
+from configparser import ConfigParser
+
+
+def configTest():
+    cp = ConfigParser()
+    cp.read("./run.ini", encoding="utf8")
+    extended = cp["cmd"]["extended"]
+    if extended:
+        print(999)
+    print(extended, type(extended))
+    print(cp)
+    pass
+
 
 if __name__ == '__main__':
     # parser = argparse.ArgumentParser("*.exe")
@@ -16,4 +29,6 @@ if __name__ == '__main__':
     # parser.add_argument("-e", "--execute", default="cmd")
     # args = parser.parse_args().__dict__
     # print(args)
+    # configTest()
+    print(int("true"))
     pass

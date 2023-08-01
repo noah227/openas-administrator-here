@@ -19,30 +19,45 @@ def ensureAdmin():
 
 class RegUtils:
     def __init__(self):
+        self.supportedExecutableList = ["cmd", "wt"]
         self.config = self.loadConfig()
         self.keyBase = "oaah"
         self.shellBase = "Directory\\Background\\shell"
-        self.supportedExecutableList = ["cmd", "wt"]
         pass
 
-    @staticmethod
-    def loadConfig():
+    def loadConfig(self):
         cp = ConfigParser()
         cp.read("./run.ini", encoding="utf8")
         config = {
             "default": {
                 "use": cp["default"]["use"],
-            },
-            "cmd": {
-                "name": cp["cmd"]["name"],
-                "executable": cp["cmd"]["executable"]
-            },
-            "wt": {
-                "name": cp["wt"]["name"],
-                "executable": cp["wt"]["executable"]
-            },
+            }
         }
+        for item in self.supportedExecutableList:
+            config[item] = RegUtils.getItemConfig(cp, item)
+        print(config)
         return config
+
+    @staticmethod
+    def getItemConfig(cp: ConfigParser, key: str):
+        """
+        获取单个配置项的配置数据
+        """
+        return {
+            "name": cp[key]["name"],
+            "executable": cp[key]["executable"],
+            "extended": RegUtils.getIfExtended(cp[key]["extended"])
+        }
+
+    @staticmethod
+    def getIfExtended(extended: str):
+        try:
+            extended = int(extended)
+            return extended > 0
+        except ValueError as e:
+            print(e)
+            return False
+        pass
 
     # 注册
     def reg(self, executable):
@@ -55,11 +70,16 @@ class RegUtils:
                 continue
             if exe := v.get("executable"):
                 key = f"{self.keyBase}.{k}"
+                valueExList = [
+                    ["Icon", v.get("icon") or executable or exe]
+                ]
+                # Extended Verbs标记
+                if v.get("extended"):
+                    valueExList.append(["extended", ""])
+
                 self.regKey(
                     (winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}"),
-                    v.get("name"), valueExList=[
-                        ["Icon", v.get("icon") or executable or exe]
-                    ]
+                    v.get("name"), valueExList=valueExList
                 )
                 self.regKey(
                     (winreg.HKEY_CLASSES_ROOT, f"{self.shellBase}\\{key}\\command"),
