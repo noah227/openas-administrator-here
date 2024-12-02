@@ -2,6 +2,8 @@
 
 运行cmd无权限？切换目录又麻烦？这个应用将解决这个问题！
 
+> Will be Archived! Use simple shell scripts or shortcut instead!
+
 ## 使用
 
 1. 从 [release](https://github.com/noah227/openas-administrator-here/releases) 下载最新版本，解压到文件夹
